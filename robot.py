@@ -1,5 +1,4 @@
-# LEGO slot:2 autostart
-
+# LEGO slot:5 autostart
 import math
 import motor
 import motor_pair
@@ -172,6 +171,17 @@ class Robot:
         motor_pair.stop(motor_pair.PAIR_1, stop=motor.BRAKE)
         print(f"turn done: heading at stop = {self.heading():.1f} err={error:.1f}")
 
+
+    async def motorturn(degrees = 0, velocity = 500):
+        motor.run_for_degrees(port.B, degrees, velocity)
+        await motor.run_for_degrees(port.A, degrees, velocity)
+
+
+    async def motor_drive(degrees = 0, velocity = 500):
+        motor.run_for_degrees(port.B, degrees, velocity)
+        await motor.run_for_degrees(port.A, -degrees, velocity)
+
+
     async def program1(self):
         self.log_heading()
         await self.drive(distance_cm=42, speed=900)
@@ -197,11 +207,44 @@ class Robot:
 
         await self.drive(distance_cm=-72, speed=900)
 
+    async def program3(self):
+        await self.drive(distance_cm=4)
+        await self.turn(45)
+        await self.drive(distance_cm=41)
+        motor.run_for_degrees(port.D, 300, 360)
+        await self.drive(distance_cm=-5, speed=300)
+        await self.drive(distance_cm=-35, speed=700)
+        await self.turn(45)
+        await self.drive(distance_cm=-4, speed=700)
+
+    async def program4(self):
+        await self.drive(distance_cm=60, speed = 400)
+        # await self.turn(-52, speed = 600)
+        # await self.drive(distance_cm=1, speed = 400)
+        # await self.drive(distance_cm=-1, speed = 400)
+        #await self.turn(52, speed = 450)
+        await self.motorturn(degrees = 300, velocity = 420)
+        # await self.drive(distance_cm=-3, speed = 400)
+        # await motor.run_for_degrees(port.A, 100, 420)
+        # await self.drive(distance_cm=1, speed = 400)
+        await self.motorturn(degrees = -400, velocity = 520)
+        await self.drive(distance_cm=-80, speed = 1000)
+    async def program5(self):
+        await self.drive(distance_cm=20, speed = 400)
+        await self.turn(45, speed = 600)
+        await self.drive(distance_cm=51, speed = 400)
+        await self.turn(-45, speed = 600)
+        # await self.drive(distance_cm=-2, speed = 700)
+        # await self.turn(3, speed = 600)
+        await self.motor_drive(degrees = 600, velocity = 670)
+        await self.drive(distance_cm=-10, speed = 700)
+        await self.turn(45, speed = 600)
+        await self.motor_drive(degrees = 1700, velocity = 1000)
 async def main():
     print("starting...")
     robot = Robot(port.B, port.A)
     await robot.start()
-    await robot.program2()
+    await robot.program5()
     await robot.stop()
 
 runloop.run(main())
