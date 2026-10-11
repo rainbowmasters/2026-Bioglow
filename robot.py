@@ -1,8 +1,10 @@
-# LEGO slot:5 autostart
+# LEGO slot:1 autostart
 import math
 import motor
 import motor_pair
 import runloop
+import color
+import color_sensor
 from hub import motion_sensor, port
 
 class Robot:
@@ -136,14 +138,14 @@ class Robot:
                             - abs(motor.relative_position(self._right_port)))
         print(f"drive done: heading at stop = {self.heading():.1f} L-R={left_minus_right}")
 
-    async def turn(self, degrees, speed=200, kp=6.0, min_speed=60,
+    async def turn(self, degrees, speed=200, kp=5.0, min_speed=60,
                    tolerance=1.0):
         """Spins in place by `degrees` -- positive = clockwise (right),
         negative = counter-clockwise (left), matching heading(). Uses the gyro
         rather than wheel rotation so wheel slip doesn't matter. Wheel speed is
         proportional to the remaining angle, capped at `speed` and floored at
         `min_speed` so the robot doesn't stall just short of the target."""
-        target_yaw = self.heading() + degrees
+        target_yaw = degrees
         max_speed = min(abs(int(speed)), 1000)
         loop_count = 0
 
@@ -162,52 +164,34 @@ class Robot:
             motor_pair.move_tank(motor_pair.PAIR_1, wheel_speed, -wheel_speed,
                                  acceleration=5000)
 
+            await runloop.sleep_ms(20)
+
             loop_count += 1
             if loop_count % 20 == 0:
                 print(f"turn: err={error:.1f} speed={wheel_speed}")
 
-            await runloop.sleep_ms(10)
+       
 
         motor_pair.stop(motor_pair.PAIR_1, stop=motor.BRAKE)
         print(f"turn done: heading at stop = {self.heading():.1f} err={error:.1f}")
 
 
-    async def motorturn(degrees = 0, velocity = 500):
-        motor.run_for_degrees(port.B, degrees, velocity)
-        await motor.run_for_degrees(port.A, degrees, velocity)
 
-
-    async def motor_drive(degrees = 0, velocity = 500):
-        motor.run_for_degrees(port.B, degrees, velocity)
-        await motor.run_for_degrees(port.A, -degrees, velocity)
-
-
-    async def program1(self):
-        self.log_heading()
-        await self.drive(distance_cm=42, speed=900)
-        await self.drive(distance_cm=-30, speed=900)
-        self.log_heading()
+    async def program0(self):
+        await self.drive(distance_cm=20, speed = 800)
+        await self.turn(90, speed = 600)
+        await runloop.sleep_ms(1000)
+        await self.turn(180, speed = 600)
+        await runloop.sleep_ms(1000)
+        await self.turn(270, speed = 600)
+        await runloop.sleep_ms(1000)
+        await self.turn(360, speed = 600)
+        await runloop.sleep_ms(1000)
+        await self.drive(distance_cm=-18, speed = 800)
 
     async def program2(self):
-        await self.rotate_accessory(port.C, degrees=-130)
-        # forward 60cm
-        await self.drive(distance_cm=72, speed=700)
-        # sleep
-        runloop.sleep_ms(200)
-        # turn 45 left
-        await self.turn(-42, speed=100)
-        # forward 13cm
-        await self.drive(distance_cm=14, speed=300)
-        # accessory D 180
-        await self.rotate_accessory(port.C, degrees=-120)
-
-        await self.drive(distance_cm=-14,speed=400)
-
-        await self.turn(42, speed=100)
-
-        await self.drive(distance_cm=-72, speed=900)
-
-    async def program3(self):
+        await self.rotate_accessory(port.D, degrees=300)
+    async def program4(self):
         await self.drive(distance_cm=4)
         await self.turn(45)
         await self.drive(distance_cm=41)
@@ -217,34 +201,73 @@ class Robot:
         await self.turn(45)
         await self.drive(distance_cm=-4, speed=700)
 
-    async def program4(self):
-        await self.drive(distance_cm=60, speed = 400)
+    async def program5(self):
+        await self.drive(distance_cm=61, speed = 1000)
         # await self.turn(-52, speed = 600)
         # await self.drive(distance_cm=1, speed = 400)
         # await self.drive(distance_cm=-1, speed = 400)
         #await self.turn(52, speed = 450)
-        await self.motorturn(degrees = 300, velocity = 420)
+        #await self.motorturn(degrees = 300, velocity = 420)
+        motor.run_for_degrees(port.A, 300, 520)
+        await motor.run_for_degrees(port.B, 300, 520)
         # await self.drive(distance_cm=-3, speed = 400)
         # await motor.run_for_degrees(port.A, 100, 420)
         # await self.drive(distance_cm=1, speed = 400)
-        await self.motorturn(degrees = -400, velocity = 520)
-        await self.drive(distance_cm=-80, speed = 1000)
-    async def program5(self):
-        await self.drive(distance_cm=20, speed = 400)
-        await self.turn(45, speed = 600)
-        await self.drive(distance_cm=51, speed = 400)
-        await self.turn(-45, speed = 600)
+        await runloop.sleep_ms(1)
+        motor.run_for_degrees(port.A, -450, 420)
+        await motor.run_for_degrees(port.B, -450, 420)
+        await self.drive(distance_cm=-70, speed = 1000)
+    async def program1(self):
+        await self.drive(distance_cm=20, speed = 800)
+        await self.turn(45, speed = 400)
+        await self.drive(distance_cm=51, speed = 800)
+        await self.turn(10, speed = 400)
         # await self.drive(distance_cm=-2, speed = 700)
         # await self.turn(3, speed = 600)
-        await self.motor_drive(degrees = 600, velocity = 670)
+        await runloop.sleep_ms(1000)
+        motor.run_for_degrees(port.A, 450, 800)
+        await motor.run_for_degrees(port.B, -450, 800)
         await self.drive(distance_cm=-10, speed = 700)
         await self.turn(45, speed = 600)
-        await self.motor_drive(degrees = 1700, velocity = 1000)
+        await runloop.sleep_ms(5)
+        motor.run_for_degrees(port.A, -1700, 800)
+        await motor.run_for_degrees(port.B, 1700, 800)
+    async def program6(self):
+        # await self.drive(distance_cm=20, speed = 400)
+        # await self.turn(45, speed = 600)
+        # await self.drive(distance_cm=68, speed = 400)
+        # await self.turn(20, speed = 600)
+        # await self.drive(distance_cm=27, speed = 400)
+        # await self.turn(25, speed = 600)
+        # await self.drive(distance_cm=33, speed = 400)
+        # await self.turn(30, speed = 600)
+        # await self.drive(distance_cm=19, speed = 400)
+        # await self.turn(-70, speed = 600)
+        # motor.run_for_degrees(port.A, 300, 3070)
+        # await motor.run_for_degrees(port.B, -300, 300)
+        await self.drive(distance_cm=10, speed = 400)
+        await self.turn(77, speed = 600)
+        await self.drive(distance_cm=96, speed = 400)
+        await self.turn(33, speed = 600)
+        await self.drive(distance_cm=60, speed = 400)
+        await self.rotate_accessory(port.D, degrees=320)
+        await self.drive(distance_cm=-7, speed = 400)
+        await self.turn(-27, speed = 600)
+        await self.drive(distance_cm=-77, speed = 400)
+    async def program7(self):
+        motor.run_for_degrees(port.A, 1200, 1000)
+        await motor.run_for_degrees(port.B, -1200, 1000)
+        await runloop.sleep_ms(10)
+        await self.drive(distance_cm=-8, speed = 400)
+        await runloop.sleep_ms(10)
+        motor.run_for_degrees(port.A, 700, 1000)
+        await motor.run_for_degrees(port.B, -700, 1000)
+        await self.drive
 async def main():
     print("starting...")
     robot = Robot(port.B, port.A)
     await robot.start()
-    await robot.program5()
+    await robot.program1()
     await robot.stop()
 
 runloop.run(main())
